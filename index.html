@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3言語 単語帳</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fb;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { text-align: center; color: #1a73e8; font-size: 24px; }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        .word-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #eee;
+        }
+        .word-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .lang-label { font-size: 12px; color: #999; width: 50px; }
+        .word-text { font-size: 18px; font-weight: bold; flex-grow: 1; }
+        .meaning-text { font-size: 16px; color: #444; flex-grow: 1; }
+        .audio-btn {
+            background: #e8f0fe; border: none; border-radius: 50%;
+            width: 36px; height: 36px; cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .audio-btn:hover { background: #d2e3fc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>My 3言語単語帳</h1>
+
+    <div id="word-list">
+
+        <!-- =====【単語カードここから】===== -->
+        <!-- 1つ目の単語 -->
+        <div class="card">
+            <!-- 英語 -->
+            <div class="word-row">
+                <span class="lang-label">英語</span>
+                <span class="word-text">Apple</span>
+                <button class="audio-btn" onclick="speak('Apple', 'en-US')">🔊</button>
+            </div>
+            <!-- ロシア語 -->
+            <div class="word-row">
+                <span class="lang-label">露語</span>
+                <span class="word-text">Яблоко</span>
+                <button class="audio-btn" onclick="speak('Яблоко', 'ru-RU')">🔊</button>
+            </div>
+            <!-- 日本語 -->
+            <div class="word-row">
+                <span class="lang-label">日本語</span>
+                <span class="meaning-text">りんご</span>
+            </div>
+        </div>
+        <!-- =====【単語カードここまで】===== -->
+
+        <!-- ※2つ目以降の単語を増やしたいときは、上の【単語カードここから】〜【ここまで】の塊をコピーして、この下に貼り付けて中身を書き換えていけば無限に増やせます！ -->
+
+    </div>
+</div>
+
+<script>
+    function speak(text, lang) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        window.speechSynthesis.speak(utterance);
+    }
+</script>
+</body>
+</html>
