@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import urllib.parse
 
 url = "https://raw.githubusercontent.com/genchiyan0327-cmd/gannbaru/main/3%E8%A8%80%E8%AA%9E.csv"
 df = pd.read_csv(url)
@@ -14,29 +13,17 @@ page_size = 50
 if "page" not in st.session_state:
     st.session_state.page = 0
 
-def make_tts(text, lang):
-    base = "https://translate.google.com/translate_tts"
-    return base + f"?ie=UTF-8&tl={lang}&client=tw-ob&q={urllib.parse.quote(text)}"
-
 start = st.session_state.page * page_size
 end = start + page_size
-
-# ★ここがポイント（表示場所を固定）
-detail_area = st.empty()
 
 st.subheader("ロシア語一覧")
 
 for _, row in df.iloc[start:end].iterrows():
-    if st.button(row["Русский"], key=row["No"]):
+    st.markdown(f"### {row['No']}. {row['Русский']}")
+    st.write("🇩🇪", row["Deutsch"])
+    st.write("🇺🇸", row["English"])
+    st.markdown("---")
 
-        with detail_area.container():
-            st.markdown("## 詳細")
-            st.write("🇷🇺", row["Русский"])
-            st.write("🇩🇪", row["Deutsch"])
-            st.write("🇺🇸", row["English"])
-            st.audio(make_tts(row["Русский"], "ru"))
-
-# ページ
 col1, col2 = st.columns(2)
 
 with col1:
