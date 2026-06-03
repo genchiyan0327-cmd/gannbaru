@@ -13,16 +13,32 @@ page_size = 50
 if "page" not in st.session_state:
     st.session_state.page = 0
 
+if "selected" not in st.session_state:
+    st.session_state.selected = None
+
 start = st.session_state.page * page_size
 end = start + page_size
 
+# ■ 一覧（ロシア語だけ）
+st.subheader("ロシア語一覧")
+
 for _, row in df.iloc[start:end].iterrows():
+    if st.button(f"{row['No']}. {row['Русский']}", key=row['No']):
+        st.session_state.selected = row
 
-    with st.expander(f"{row['No']}. {row['Русский']}"):
-        st.write("🇷🇺", row["Русский"])
-        st.write("🇩🇪", row["Deutsch"])
-        st.write("🇺🇸", row["English"])
+# ■ 詳細（ドイツ語＋英語だけ）
+if st.session_state.selected is not None:
+    row = st.session_state.selected
 
+    st.subheader("意味")
+
+    st.write("🇩🇪 ドイツ語:", row["Deutsch"])
+    st.write("🇺🇸 英語:", row["English"])
+
+    if st.button("閉じる"):
+        st.session_state.selected = None
+
+# ■ ページ送り
 col1, col2 = st.columns(2)
 
 with col1:
