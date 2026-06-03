@@ -15,34 +15,23 @@ page_size = 50
 if "page" not in st.session_state:
     st.session_state.page = 0
 
-if "open_row" not in st.session_state:
-    st.session_state.open_row = None
-
 start = st.session_state.page * page_size
 end = start + page_size
 
 st.subheader("ロシア語一覧")
 
-# ■ 一覧（ロシア語＋音声）
-for i, row in df.iloc[start:end].iterrows():
+for idx, row in df.iloc[start:end].iterrows():
 
-    col1, col2 = st.columns([6, 1])
+    st.write(f"{idx+1}. {row['Русский']}")
+
+    col1, col2 = st.columns(2)
 
     with col1:
-        st.write(f"{row['No']}. {row['Русский']}")
-
-    with col2:
         st.audio(make_tts(row["Русский"], "ru"))
 
-    # ■ クリックで展開
-    if st.button("開く", key=f"open{i}"):
-        st.session_state.open_row = row
-
-    # ■ 展開表示（その場）
-    if st.session_state.open_row is not None and st.session_state.open_row["No"] == row["No"]:
+    if st.button("開く", key=str(idx)):
 
         st.markdown("---")
-
         st.write("🇩🇪", row["Deutsch"])
         st.audio(make_tts(row["Deutsch"], "de"))
 
