@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import urllib.parse
 
 url = "https://raw.githubusercontent.com/genchiyan0327-cmd/gannbaru/main/3%E8%A8%80%E8%AA%9E.csv"
 df = pd.read_csv(url)
@@ -16,29 +17,39 @@ if "page" not in st.session_state:
 if "selected" not in st.session_state:
     st.session_state.selected = None
 
+def make_tts(text, lang):
+    base = "https://translate.google.com/translate_tts"
+    return base + f"?ie=UTF-8&tl={lang}&client=tw-ob&q={urllib.parse.quote(text)}"
+
 start = st.session_state.page * page_size
 end = start + page_size
 
-# ■ 一覧（ロシア語だけ）
+# ■ 一覧（ボタン大きく）
 st.subheader("ロシア語一覧")
 
 for _, row in df.iloc[start:end].iterrows():
-    if st.button(f"{row['No']}. {row['Русский']}", key=row['No']):
+    if st.button(row["Русский"], key=row["No"]):
         st.session_state.selected = row
 
-# ■ 詳細（ドイツ語＋英語だけ）
+# ■ 同じ場所に表示（重要）
 if st.session_state.selected is not None:
-    row = st.session_state.selected
 
+    st.markdown("---")
     st.subheader("意味")
 
-    st.write("🇩🇪 ドイツ語:", row["Deutsch"])
-    st.write("🇺🇸 英語:", row["English"])
+    row = st.session_state.selected
+
+    st.write("🇩🇪", row["Deutsch"])
+    st.write("🇺🇸", row["English"])
+
+    st.audio(make_tts(row["Русский"], "ru"))
 
     if st.button("閉じる"):
         st.session_state.selected = None
 
-# ■ ページ送り
+st.markdown("---")
+
+# ■ ページ
 col1, col2 = st.columns(2)
 
 with col1:
