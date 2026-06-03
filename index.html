@@ -5,84 +5,477 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3言語 単語帳</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #f5f7fb;
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --accent: #4a90e2;
+            --accent-hover: #357abd;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
-        .container { max-width: 600px; margin: 0 auto; }
-        h1 { text-align: center; color: #1a73e8; font-size: 24px; }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 30px;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* 検索・フィルターエリア */
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
             margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            outline: none;
+            transition: border-color 0.2s;
         }
-        .word-row {
+        .search-box:focus {
+            border-color: var(--accent);
+        }
+
+        /* 一覧画面のリスト */
+        .word-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .word-card {
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #eee;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
         }
-        .word-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .lang-label { font-size: 12px; color: #999; width: 50px; }
-        .word-text { font-size: 18px; font-weight: bold; flex-grow: 1; }
-        .meaning-text { font-size: 16px; color: #444; flex-grow: 1; }
+
+        .word-card:active {
+            transform: scale(0.98);
+            background-color: #fafafa;
+        }
+
+        .word-info {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .ru-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            word-break: break-word;
+        }
+
+        .ja-sub-text {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        /* 音声ボタン */
         .audio-btn {
-            background: #e8f0fe; border: none; border-radius: 50%;
-            width: 36px; height: 36px; cursor: pointer; font-size: 16px;
-            display: flex; align-items: center; justify-content: center;
+            background: none;
+            border: none;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        .audio-btn:hover { background: #d2e3fc; }
+
+        .audio-btn:active {
+            background-color: #f0f0f0;
+        }
+
+        .audio-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent);
+        }
+
+        /* 詳細画面モーダル */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .modal-ru {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2c3e50;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .detail-section {
+            margin-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .lang-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .lang-label.en { color: #e67e22; }
+        .lang-label.de { color: #27ae60; }
+        .lang-label.ja { color: #7f8c8d; }
+
+        .detail-value {
+            font-size: 1.15rem;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .close-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(74, 144, 226, 0.2);
+        }
+
+        .close-btn:active {
+            background-color: var(--accent-hover);
+        }
+
+        /* エラー・ローディング表示 */
+        .status-msg {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-sub);
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>My 3言語単語帳</h1>
+    <header>ロシア語単語帳</header>
 
-    <div id="word-list">
+    <div class="container">
+        <input type="text" id="searchBox" class="search-box" placeholder="ロシア語や日本語で検索..." style="display:none;">
 
-        <!-- =====【単語カードここから】===== -->
-        <!-- 1つ目の単語 -->
-        <div class="card">
-            <!-- 英語 -->
-            <div class="word-row">
-                <span class="lang-label">英語</span>
-                <span class="word-text">Apple</span>
-                <button class="audio-btn" onclick="speak('Apple', 'en-US')">🔊</button>
-            </div>
-            <!-- ロシア語 -->
-            <div class="word-row">
-                <span class="lang-label">露語</span>
-                <span class="word-text">Яблоко</span>
-                <button class="audio-btn" onclick="speak('Яблоко', 'ru-RU')">🔊</button>
-            </div>
-            <!-- 日本語 -->
-            <div class="word-row">
-                <span class="lang-label">日本語</span>
-                <span class="meaning-text">りんご</span>
-            </div>
-        </div>
-        <!-- =====【単語カードここまで】===== -->
+        <div id="status" class="status-msg">CSVファイルを読み込み中...</div>
 
-        <!-- ※2つ目以降の単語を増やしたいときは、上の【単語カードここから】〜【ここまで】の塊をコピーして、この下に貼り付けて中身を書き換えていけば無限に増やせます！ -->
-
+        <div id="wordList" class="word-list"></div>
     </div>
-</div>
 
-<script>
-    function speak(text, lang) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        window.speechSynthesis.speak(utterance);
-    }
-</script>
+    <div id="detailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div id="modalRu" class="modal-ru"></div>
+                <button id="modalAudioBtn" class="audio-btn" title="音声を再生">
+                    <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                </button>
+            </div>
+            
+            <div class="detail-section">
+                <div class="lang-label en">English</div>
+                <div id="modalEn" class="detail-value"></div>
+            </div>
+            
+            <div class="detail-section">
+                <div class="lang-label de">Deutsch</div>
+                <div id="modalDe" class="detail-value"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="lang-label ja">日本語</div>
+                <div id="modalJa" class="detail-value"></div>
+            </div>
+
+            <button id="modalCloseBtn" class="close-btn">閉じる</button>
+        </div>
+    </div>
+
+    <script>
+        let wordData = [];
+        let currentPlayingText = '';
+
+        // DOM要素の取得
+        const wordListEl = document.getElementById('wordList');
+        const searchBox = document.getElementById('searchBox');
+        const statusEl = document.getElementById('status');
+        
+        const detailModal = document.getElementById('detailModal');
+        const modalRu = document.getElementById('modalRu');
+        const modalEn = document.getElementById('modalEn');
+        const modalDe = document.getElementById('modalDe');
+        const modalJa = document.getElementById('modalJa');
+        const modalAudioBtn = document.getElementById('modalAudioBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        // アプリ起動時にCSVを読み込む
+        window.addEventListener('DOMContentLoaded', fetchCSV);
+
+        // CSVファイルの取得とパース
+        async function fetchCSV() {
+            try {
+                // キャッシュ回避のためにタイムスタンプを付与してリクエスト
+                const response = await fetch('3%E8%A8%80%E8%AA%9E.csv?t=' + new Date().getTime());
+                if (!response.ok) {
+                    throw new Error('CSVファイルの読み込みに失敗しました。ファイル名や配置場所を確認してください。');
+                }
+                const csvText = await response.text();
+                wordData = parseCSV(csvText);
+
+                if (wordData.length === 0) {
+                    statusEl.textContent = 'データが空か、正しくパースできませんでした。';
+                    return;
+                }
+
+                statusEl.style.display = 'none';
+                searchBox.style.display = 'block';
+                renderList(wordData);
+            } catch (error) {
+                statusEl.textContent = error.message;
+                statusEl.style.color = '#e74c3c';
+            }
+        }
+
+        // 簡易CSVパース関数（カンマ区切り、クォーテーション対応）
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/);
+            if (lines.length < 2) return [];
+
+            // ヘッダー行の解析
+            const headers = splitCSVLine(lines[0]);
+            const result = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const values = splitCSVLine(lines[i]);
+                
+                // 行の要素数がヘッダーと合わない場合はスキップまたは補正
+                const rowData = {};
+                headers.forEach((header, index) => {
+                    rowData[header.trim()] = values[index] ? values[index].trim() : '';
+                });
+                
+                // 必須フィールドのチェック
+                if (rowData['Русский'] || rowData['日本語']) {
+                    result.push(rowData);
+                }
+            }
+            return result;
+        }
+
+        // 1行をカンマで分割（ダブルクォーテーション内のカンマを保護）
+        function splitCSVLine(line) {
+            const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+            return line.split(',').map(val => {
+                let m = val.trim();
+                if (m.startsWith('"') && m.endsWith('"')) {
+                    m = m.slice(1, -1);
+                }
+                return m;
+            });
+        }
+
+        // リスト表示
+        function renderList(data) {
+            wordListEl.innerHTML = '';
+            if (data.length === 0) {
+                wordListEl.innerHTML = '<div class="status-msg">見つかりませんでした</div>';
+                return;
+            }
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                // 各行をタップすると詳細画面へ（ただし音声ボタンタップ時は除く）
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.audio-btn')) return;
+                    showDetail(item);
+                });
+
+                const info = document.createElement('div');
+                info.className = 'word-info';
+
+                const ru = document.createElement('div');
+                ru.className = 'ru-text';
+                ru.textContent = item['Русский'] || '---';
+
+                const ja = document.createElement('div');
+                ja.className = 'ja-sub-text';
+                ja.textContent = item['日本語'] || '---';
+
+                info.appendChild(ru);
+                info.appendChild(ja);
+
+                // 音声ボタン
+                const audioBtn = document.createElement('button');
+                audioBtn.className = 'audio-btn';
+                audioBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+                audioBtn.addEventListener('click', () => {
+                    speakRussian(item['Русский']);
+                });
+
+                card.appendChild(info);
+                card.appendChild(audioBtn);
+                wordListEl.appendChild(card);
+            });
+        }
+
+        // ロシア語の音声読み上げ (Web Speech API)
+        function speakRussian(text) {
+            if (!text) return;
+            // 再生中の場合は一度停止
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ru-RU'; // ロシア語を設定
+            
+            // iOS/Androidブラウザ向けのおまじない（声を確実にロシア語にする）
+            const voices = window.speechSynthesis.getVoices();
+            const ruVoice = voices.find(v => v.lang.startsWith('ru'));
+            if (ruVoice) utterance.voice = ruVoice;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 詳細画面（モーダル）を開く
+        function showDetail(item) {
+            modalRu.textContent = item['Русский'] || '---';
+            modalEn.textContent = item['English'] || '---';
+            modalDe.textContent = item['Deutsch'] || '---';
+            modalJa.textContent = item['日本語'] || '---';
+            
+            currentPlayingText = item['Русский'];
+            
+            detailModal.classList.add('active');
+        }
+
+        // 詳細画面を閉じる
+        function closeDetail() {
+            detailModal.classList.remove('active');
+        }
+
+        // イベントリスナー
+        modalCloseBtn.addEventListener('click', closeDetail);
+        detailModal.addEventListener('click', (e) => {
+            if (e.target === detailModal) closeDetail();
+        });
+        modalAudioBtn.addEventListener('click', () => {
+            speakRussian(currentPlayingText);
+        });
+
+        // 検索機能
+        searchBox.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+                renderList(wordData);
+                return;
+            }
+
+            const filtered = wordData.filter(item => {
+                const ru = (item['Русский'] || '').toLowerCase();
+                const ja = (item['日本語'] || '').toLowerCase();
+                const en = (item['English'] || '').toLowerCase();
+                const de = (item['Deutsch'] || '').toLowerCase();
+                
+                return ru.includes(query) || ja.includes(query) || en.includes(query) || de.includes(query);
+            });
+            renderList(filtered);
+        });
+
+        // ページを離れるときに音声を止める
+        window.addEventListener('beforeunload', () => {
+            window.speechSynthesis.cancel();
+        });
+    </script>
 </body>
 </html>
