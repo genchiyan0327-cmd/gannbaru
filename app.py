@@ -14,9 +14,6 @@ page_size = 50
 if "page" not in st.session_state:
     st.session_state.page = 0
 
-if "selected" not in st.session_state:
-    st.session_state.selected = None
-
 def make_tts(text, lang):
     base = "https://translate.google.com/translate_tts"
     return base + f"?ie=UTF-8&tl={lang}&client=tw-ob&q={urllib.parse.quote(text)}"
@@ -24,32 +21,22 @@ def make_tts(text, lang):
 start = st.session_state.page * page_size
 end = start + page_size
 
-# ■ 一覧（ボタン大きく）
+# ★ここがポイント（表示場所を固定）
+detail_area = st.empty()
+
 st.subheader("ロシア語一覧")
 
 for _, row in df.iloc[start:end].iterrows():
     if st.button(row["Русский"], key=row["No"]):
-        st.session_state.selected = row
 
-# ■ 同じ場所に表示（重要）
-if st.session_state.selected is not None:
+        with detail_area.container():
+            st.markdown("## 詳細")
+            st.write("🇷🇺", row["Русский"])
+            st.write("🇩🇪", row["Deutsch"])
+            st.write("🇺🇸", row["English"])
+            st.audio(make_tts(row["Русский"], "ru"))
 
-    st.markdown("---")
-    st.subheader("意味")
-
-    row = st.session_state.selected
-
-    st.write("🇩🇪", row["Deutsch"])
-    st.write("🇺🇸", row["English"])
-
-    st.audio(make_tts(row["Русский"], "ru"))
-
-    if st.button("閉じる"):
-        st.session_state.selected = None
-
-st.markdown("---")
-
-# ■ ページ
+# ページ
 col1, col2 = st.columns(2)
 
 with col1:
