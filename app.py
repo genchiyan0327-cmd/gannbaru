@@ -7,12 +7,13 @@ from io import BytesIO
 url = "https://raw.githubusercontent.com/genchiyan0327-cmd/gannbaru/main/3%E8%A8%80%E8%AA%9E.csv"
 df = pd.read_csv(url)
 
+# 音声生成（安定版＋軽量化）
+@st.cache_data
 def make_audio(text, lang):
     tts = gTTS(text=text, lang=lang)
     fp = BytesIO()
     tts.write_to_fp(fp)
-    fp.seek(0)
-    return fp
+    return fp.getvalue()
 
 st.title("語彙アプリ（ロシア語・ドイツ語・英語）")
 
@@ -31,7 +32,7 @@ for idx, row in df.iloc[start:end].iterrows():
 
     with st.expander(title):
 
-        st.audio(make_audio(row["Русский"], "ru"))
+        st.audio(make_audio(row["Русский"], "ru"), format="audio/mp3")
 
         st.write(f"🇩🇪 {row['Deutsch']}")
         st.write(f"🇺🇸 {row['English']}")
