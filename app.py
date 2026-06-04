@@ -20,17 +20,18 @@ if "page" not in st.session_state:
 
 start = st.session_state.page * page_size
 end = start + page_size
+🔊"
 
-# 一覧
-for idx, row in df.iloc[start:end].iterrows():
-
-    title = f"{idx + 1}. {row['Русский']} 🔊"
-
-    with st.expander(title):
+ with st.expander(title):
 
         st.write(f"🇩🇪 {row['Deutsch']}")
-        st.write(f"🇺🇸 {row['English']}")
+        st.write(f"🇺🇸 {row['English']}")   
+with st.expander(title):
 
+    st.audio(make_audio(row["Русский"], "ru"))
+
+    st.write(f"🇩🇪 {row['Deutsch']}")
+    st.write(f"🇺🇸 {row['English']}")
 # ページ送り
 col1, col2 = st.columns(2)
 
