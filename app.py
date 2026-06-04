@@ -7,7 +7,7 @@ from io import BytesIO
 url = "https://raw.githubusercontent.com/genchiyan0327-cmd/gannbaru/main/3%E8%A8%80%E8%AA%9E.csv"
 df = pd.read_csv(url)
 
-# 音声生成（安定版＋軽量化）
+# 音声生成（軽量＆安定）
 @st.cache_data
 def make_audio(text, lang):
     tts = gTTS(text=text, lang=lang)
@@ -25,17 +25,24 @@ if "page" not in st.session_state:
 start = st.session_state.page * page_size
 end = start + page_size
 
-# 一覧
+# 表示
 for idx, row in df.iloc[start:end].iterrows():
 
-    title = f"{idx + 1}. {row['Русский']} 🔊"
+    title = f"{idx + 1}. {row['Русский']}"
 
     with st.expander(title):
 
+        # ロシア語
+        st.write(f"🇷🇺 {row['Русский']}")
         st.audio(make_audio(row["Русский"], "ru"), format="audio/mp3")
 
+        # ドイツ語
         st.write(f"🇩🇪 {row['Deutsch']}")
+        st.audio(make_audio(row["Deutsch"], "de"), format="audio/mp3")
+
+        # 英語
         st.write(f"🇺🇸 {row['English']}")
+        st.audio(make_audio(row["English"], "en"), format="audio/mp3")
 
 # ページ送り
 col1, col2 = st.columns(2)
