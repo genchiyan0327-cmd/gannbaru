@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-
+from gtts import gTTS
+from io import BytesIO
 # CSV読み込み
 url = "https://raw.githubusercontent.com/genchiyan0327-cmd/gannbaru/main/3%E8%A8%80%E8%AA%9E.csv"
 df = pd.read_csv(url)
