@@ -5,7 +5,12 @@ from io import BytesIO
 # CSV読み込み
 url = "https://raw.githubusercontent.com/genchiyan0327-cmd/gannbaru/main/3%E8%A8%80%E8%AA%9E.csv"
 df = pd.read_csv(url)
-
+def make_audio(text, lang):
+    tts = gTTS(text=text, lang=lang)
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    return fp
 st.title("語彙アプリ（ロシア語・ドイツ語・英語）")
 
 page_size = 50
