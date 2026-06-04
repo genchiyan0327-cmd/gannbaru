@@ -31,16 +31,10 @@ for idx, row in df.iloc[start:end].iterrows():
 
     with st.expander(title):
 
-        # ロシア語
         st.audio(make_audio(row["Русский"], "ru"))
 
-        # ドイツ語
         st.write(f"🇩🇪 {row['Deutsch']}")
-        st.audio(make_audio(row["Deutsch"], "de"))
-
-        # 英語
         st.write(f"🇺🇸 {row['English']}")
-        st.audio(make_audio(row["English"], "en"))
 
 # ページ送り
 col1, col2 = st.columns(2)
