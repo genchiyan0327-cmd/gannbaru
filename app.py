@@ -7,12 +7,12 @@ from io import BytesIO
 url = "https://raw.githubusercontent.com/genchiyan0327-cmd/gannbaru/main/3%E8%A8%80%E8%AA%9E.csv"
 df = pd.read_csv(url)
 
-# 音声生成（安定版）
 def make_audio(text, lang):
-    tts = gTTS(text=str(text), lang=lang)
+    tts = gTTS(text=text, lang=lang)
     fp = BytesIO()
     tts.write_to_fp(fp)
-    return fp.getvalue()
+    fp.seek(0)
+    return fp
 
 st.title("語彙アプリ（ロシア語・ドイツ語・英語）")
 
@@ -24,25 +24,17 @@ if "page" not in st.session_state:
 start = st.session_state.page * page_size
 end = start + page_size
 
-# 単語表示
+# 一覧
 for idx, row in df.iloc[start:end].iterrows():
 
-    with st.expander(f"{idx + 1}. {row.iloc[0]}"):
+    title = f"{idx + 1}. {row['Русский']} 🔊"
 
-        # ロシア語
-        st.write("🇷🇺", row.iloc[0])
-        if st.button(f"🔊 再生（RU {idx}）"):
-            st.audio(make_audio(row.iloc[0], "ru"), format="audio/mp3")
+    with st.expander(title):
 
-        # ドイツ語
-        st.write("🇩🇪", row.iloc[1])
-        if st.button(f"🔊 再生（DE {idx}）"):
-            st.audio(make_audio(row.iloc[1], "de"), format="audio/mp3")
+        st.audio(make_audio(row["Русский"], "ru"))
 
-        # 英語
-        st.write("🇺🇸", row.iloc[2])
-        if st.button(f"🔊 再生（EN {idx}）"):
-            st.audio(make_audio(row.iloc[2], "en"), format="audio/mp3")
+        st.write(f"🇩🇪 {row['Deutsch']}")
+        st.write(f"🇺🇸 {row['English']}")
 
 # ページ送り
 col1, col2 = st.columns(2)
